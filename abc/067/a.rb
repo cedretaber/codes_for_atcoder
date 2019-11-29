@@ -1,0 +1,1 @@
+puts gets.chomp.split(?\s).map(&:to_i).tap { |a, b| break [a, b, a+b].any? { |i| i % 3 == 0 } ? "Possible" : "Impossible" }

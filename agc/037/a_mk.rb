@@ -1,0 +1,1 @@
+puts (10**5*2).times.map { [*?a..?z].sample }.join

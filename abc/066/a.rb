@@ -1,0 +1,1 @@
+puts gets.chomp.split(?\s).map(&:to_i).combination(2).map { |a, b| a + b }.sort.first

@@ -1,0 +1,7 @@
+6
+a 1 b
+c 2 d
+e 3 f
+b 4 g
+a 4 g
+c 3 f
