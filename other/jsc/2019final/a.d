@@ -11,20 +11,16 @@ void main()
     auto bs = readln.split.to!(int[]);
 
     auto memo = new IJ[](2*10^^6);
-    int c;
     foreach (i; 0..N) {
         foreach (j; 0..M) {
-            if (c == 2*10^^6) goto ng;
             auto w = as[i] + bs[j];
             if (memo[w].a) {
                 auto ij = memo[w];
                 writefln("%d %d %d %d", ij.i, ij.j, i, j);
                 return;
             }
-            ++c;
             memo[w] = IJ(i, j, true);
         }
     }
-    ng:
     writeln("-1");
 }
