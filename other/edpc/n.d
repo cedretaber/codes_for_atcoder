@@ -2,26 +2,27 @@ import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.
 
 void main()
 {
-    readln;
+    auto N = readln.chomp.to!int;
     auto as = readln.split.to!(long[]);
-    long res;
-    while (as.length > 1) {
-        size_t i;
-        auto min_d = long.max;
-        foreach (j; 0..as.length-1) if (as[j] + as[j+1] < min_d) {
-            min_d = as[j] + as[j+1];
-            i = j;
-        }
-        long[] bs;
-        foreach (j; 0..as.length) {
-            if (j == i) {
-                res += as[j] + as[j+1];
-                bs ~= as[j] + as[j+1];
-            } else if (j-1 != i) {
-                bs ~= as[j];
-            }
-        }
-        as = bs;
+    auto cs = new long[](N);
+    foreach (i; 0..N) {
+        if (i != 0) cs[i] = cs[i-1];
+        cs[i] += as[i];
     }
-    writeln(res);
+
+    auto DP = new long[][](N, N);
+    long solve(int l, int r) {
+        if (l == r) return 0;
+        if (DP[l][r] == 0) {
+            long x = long.max;
+            foreach (m; l..r) {
+                x = min(x, solve(l, m) + solve(m+1, r));
+            }
+            x += cs[r];
+            if (l != 0) x -= cs[l-1];
+            DP[l][r] = x;
+        }
+        return DP[l][r];
+    }
+    writeln(solve(0, N-1));
 }
