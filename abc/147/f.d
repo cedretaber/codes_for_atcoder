@@ -7,11 +7,16 @@ void main()
     auto nxd = readln.split.to!(long[]);
     auto N = nxd[0];
     auto X = nxd[1];
-    auto D = abs(nxd[2]);
+    auto D = nxd[2];
 
     if (D == 0) {
         writeln(X == 0 ? 1 : N+1);
         return;
+    }
+
+    if (D < 0) {
+        X = -X;
+        D = -D;
     }
 
     auto kcm = new long[](N);
@@ -23,14 +28,27 @@ void main()
 
     LR[][long] CM;
     foreach (k; 0..N+1) {
-        if (k == 0) {
-            CM[0] ~= LR(0, 0);
-            continue;
-        } else if (k == N) {
-            CM[(k*X)%D] ~= LR(k*X/D + kcm[k-1]);
-        }
-        s = (k*X)%D;
-        CM[s] ~= LR(kcm[k-1] + k*X/D, kcm[N-1] - kcm[N-k-1] + k*X/D);
+        CM[(k*X)%D] ~= LR(kcm[max(0, k-1)] + k*X/D, kcm[N-1] - kcm[max(0, N-k-1)] + k*X/D);
     }
-    long r;
+    long ret;
+    foreach (_, lrs; CM) {
+        sort!"a.l < b.l"(lrs);
+        long l = long.max, r;
+        foreach (lr; lrs) {
+            if (l == long.max) {
+                l = lr.l;
+                r = lr.r;
+            } else if (lr.l <= r) {
+                r = max(r, lr.r);
+            } else {
+                ret += r - l + 1;
+                l = lr.l;
+                r = lr.r;
+            }
+        }
+        if (l != long.max) {
+            ret += r - l + 1;
+        }
+    }
+    writeln(ret);
 }
