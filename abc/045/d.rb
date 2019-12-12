@@ -10,11 +10,11 @@ n.times do
 end
 
 rs = Array.new(10) { 0 }
-x = 0
+s = 0
 ps.each do |_, n|
-  x += 1
+  s += 1
   rs[n] += 1
 end
-rs[0] = (h-2)*(w-2) - x
+rs[0] = (h-2)*(w-2) - s
 
 puts rs

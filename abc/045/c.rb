@@ -1,0 +1,1 @@
+gets.chomp.chars.tap { |cs| puts ["+", ""].repeated_permutation(cs.length-1).map { |os| eval(cs.zip(os).flatten.compact.join) }.reduce(:+) }
