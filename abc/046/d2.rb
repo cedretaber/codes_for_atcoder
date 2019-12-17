@@ -1,0 +1,1 @@
+gets.chomp.chars.partition { |c| c == "p" }.tap { |g, p| puts (p.length - g.length) / 2 }
