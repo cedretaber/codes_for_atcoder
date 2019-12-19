@@ -13,16 +13,9 @@ long pow(long x, long n)
     return y;
 }
 
-long to_inv(long x)
+long inv(long x)
 {
-    long n = 1;
-    long k = P-2;
-    while (k) {
-        if (k%2 == 1) n = (n * x) % P;
-        x = x^^2 % P;
-        k /= 2;
-    }
-    return n;
+    return pow(x, P-2);
 }
 
 void main()
@@ -37,7 +30,7 @@ void main()
         writeln((as[0] + as[1] + as[0] * as[1]) % P);
         return;
     }
-    long i2 = 2.to_inv();
+    long i2 = 2.inv;
     long a = (as[0] * pow(2, N-2)) % P;
     long ap = a;
     foreach (i; 1..N-1) {
@@ -47,7 +40,7 @@ void main()
     a = (a + ap * as[N-1]) % P;
     long s = a;
     foreach (i; 1..N-1) {
-        a = (a * as[i-1].to_inv()) % P;
+        a = (a * as[i-1].inv) % P;
         if (i == 1) {
             a = (a + P - pow(2, N-2));
         } else {
