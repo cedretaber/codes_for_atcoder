@@ -1,0 +1,1 @@
+puts gets.chomp.chars.chunk(&:itself).tap { |cs| p cs.to_a }.count - 1
