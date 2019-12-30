@@ -1,5 +1,7 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
 
+alias P = Tuple!(long, "min", long, "max", bool, "odd", bool, "init");
+
 void main()
 {
     auto N = readln.chomp.to!int;
@@ -12,68 +14,74 @@ void main()
         T[A] ~= B;
         T[B] ~= A;
     }
+    auto PS = new P[](N);
+    int[] ks;
+    auto RS = new long[](N);
     auto K = readln.chomp.to!int;
-    auto CS = new int[](N);
-    auto BS = new int[](N);
-    int root;
-    bool has_root;
     foreach (_; 0..K) {
         auto vp = readln.split.to!(int[]);
         auto v = vp[0]-1;
-        if (!has_root) {
-            root = v;
-        }
-        BS[v] = 1;
-        CS[v] = vp[1];
+        auto p = vp[1];
+        PS[v].min = p;
+        PS[v].max = p;
+        PS[v].odd = p%2 == 1;
+        PS[v].init = true;
+        RS[v] = p;
+        ks ~= v;
     }
 
-    auto RS = new int[](N);
-    int[] ROOTS;
-    void tmp_paint(int i, int p, int r) {
-        if (BS[i] == 0) {
-            BS[i] = 2;
-            CS[i] = CS[p];
-        }
-        RS[i] = r;
-        bool is_root = true;
-        foreach (j; T[i]) if (j != p) {
-            tmp_paint(j, i, r+1);
-            is_root = false;
-        }
-        if (is_root) {
-            ROOTS ~= i;
-        }
-    }
-    tmp_paint(root, -1, 0);
-
-    bool paint(int i, int p) {
+    bool walk(int i, int p) {
         if (p != -1) {
-            if (BS[i] == 2) {
-                if (CS[i]+1 != CS[p] && CS[i]-1 == CS[p]) {
-                    if (CS[i] < CS[p]) {
-                        CS[i] = CS[p] - 1;
-                    } else {
-                        CS[i] = CS[p] + 1;
-                    }
-                } else {
-                    return true;
-                }
-            } else {
-                if (CS[i]+1 != CS[p] && CS[i]-1 == CS[p]) return false;
+            auto p_min = PS[p].min - 1;
+            auto p_max = PS[p].max + 1;
+            bool was_same = PS[i].init && PS[i].min == PS[i].max;
+            if (!PS[i].init) {
+                PS[i].min = p_min;
+                PS[i].max = p_max;
+                PS[i].odd = !PS[p].odd;
+                PS[i].init = true;
+            } else if (PS[i].min != PS[i].max) {
+                PS[i].min = max(PS[i].min, p_min);
+                PS[i].max = min(PS[i].max, p_max);
+            } else if (PS[i].min < p_min || PS[i].max > p_max) {
+                return false;
             }
+            if (p_min > p_max) return false;
+            if (PS[i].odd == PS[p].odd) return false;
+            if (was_same) return true;
         }
-        foreach (j; T[i]) if (RS[j] > RS[i]) {
-            return paint(j, i);
+
+        foreach (j; T[i]) if (j != p) {
+            if (!walk(j, i)) return false;
         }
+
         return true;
     }
-
-    foreach (r; ROOTS) {
-        if (!paint(r, -1)) {
+    foreach (i; ks) {
+        if (!walk(i, -1)) {
             writeln("No");
             return;
         }
     }
-    writeln("Yes");
-    writeln(CS[].to!(string[]).join("\n"));
+
+    void paint(int i, int p) {
+        if (p != -1) {
+            auto min_p = RS[p] - 1;
+            auto max_p = RS[p] + 1;
+            if (PS[i].min <= min_p && min_p <= PS[i].max) {
+                RS[i] = min_p;
+            } else if (PS[i].min <= max_p && max_p <= PS[i].max) {
+                RS[i] = max_p;
+            } else {
+                throw new Exception("");
+            }
+        }
+
+        foreach (j; T[i]) if (j != p) {
+            paint(j, i);
+        }
+    }
+    paint(ks[0], -1);
+
+    writeln("Yes\n", RS[].to!(string[]).join("\n"));
 }
