@@ -6,7 +6,7 @@ void main()
     auto N = nk[0];
     auto K = nk[1];
     auto hs = readln.split.to!(int[]);
-    int i, j, k;
+    int i, j;
     while (i < N && hs[i] == 1) ++i;
     foreach (_; 0..K) {
         ++i;
