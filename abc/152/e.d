@@ -2,6 +2,26 @@ import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.
 
 enum P = 10L^^9+7;
 
+bool[10^^3+1] PS;
+int[] QS;
+
+void prime_init()
+{
+    PS[] = true;
+    PS[0] = false;
+    PS[1] = false;
+    foreach (i; 2..10^^3+1) {
+        if (PS[i]) {
+            QS ~= i;
+            auto x = i*2;
+            while (x <= 10^^3) {
+                PS[x] = false;
+                x += i;
+            }
+        }
+    }
+}
+
 long pow(long x, long n) {
     long y = 1;
     while (n) {
@@ -20,15 +40,29 @@ long inv(long x)
 void main()
 {
     auto N = readln.chomp.to!int;
-    auto as = readln.split.to!(long[]);
+    auto as = readln.split.to!(int[]);
 
-    long x = as[0];
-    foreach (a; as[1..$]) {
-        x = ((a * x) / gcd(a, x)) % P;
-    }
-    long r;
+    prime_init();
+    auto ps = new int[](10^^6+1);
     foreach (a; as) {
-        r = (r + x / a) % P;
+        int[int] qs;
+        foreach (p; QS) {
+            while (a%p == 0) {
+                a /= p;
+                if (p !in qs) qs[p] = 0;
+                ++qs[p];
+            }
+        }
+        if (a != 1) qs[a] = 1;
+        foreach (p, n; qs) ps[p] = max(ps[p], n);
     }
+
+    long x = 1;
+    foreach (i, n; ps) if (n) {
+        x = x * pow(i.to!long, n) % P;
+    }
+    long[] bs;
+    long r;
+    foreach (a; as) r = (r + x * inv(a) % P) % P;
     writeln(r);
 }
