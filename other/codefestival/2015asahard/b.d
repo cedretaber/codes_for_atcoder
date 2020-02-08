@@ -1,4 +1,7 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
+import std.container.slist;
+
+alias S = Tuple!(size_t, "i", long, "a");
 
 void main()
 {
@@ -7,33 +10,47 @@ void main()
     auto K = nk[1];
     auto AS = readln.split.to!(long[]);
 
-    long l, r = 10^^9;
-    while (l+1 < r) {
-        auto m = (l+r)/2;
-        long k;
-        foreach (a; AS) k += max(0, a-m);
-        if (k > K) {
-            l = m;
-        } else {
-            r = m;
-        }
-    }
-    foreach (a; AS) K -= max(0, a-r);
-    long p;
+    auto BS = new long[](N+1);
+    auto stk = new S[](N+1);
+    stk[0] = S(0, 0);
+    size_t j;
+    long r = N, sm;
     foreach (i; 0..N) {
-        auto a = min(r, AS[i]);
-        if (K > 0 && a > 1) {
-            K -= 1;
-            a -= 1;
-        }
-        writeln(a);
-        p += a*2 + 1;
+        sm += AS[i];
         if (i == 0) {
-            p += a;
+            r += AS[i];
         } else {
-            p += abs(a - AS[i-1]);
+            r += abs(AS[i] - AS[i-1]);
         }
-        if (i == N-1) p += a;
+        if (i == N-1) r += AS[i];
+
+        if (AS[i] > stk[j].a) {
+            stk[++j] = S(i, AS[i]);
+            continue;
+        }
+
+        while (AS[i] <= stk[j].a && AS[i] <= stk[j-1].a) {
+            auto s = stk[j--];
+            BS[i-s.i] += s.a - stk[j].a;
+        }
+        if (AS[i] <= stk[j].a) {
+            auto s = stk[j];
+            BS[i-s.i] += s.a - AS[i];
+            stk[j].a = AS[i];
+        }
     }
-    writeln(p);
+    while (j > 0) {
+        auto s = stk[j--];
+        BS[N-s.i] += s.a - stk[j].a;
+    }
+
+    r += (sm - K) * 2;
+    foreach (ww, n; BS) if (ww) {
+        auto w = ww.to!long;
+        auto d = min(n, K/w);
+        K -= d*w;
+        r -= d*2;
+    }
+
+    writeln(r);
 }
