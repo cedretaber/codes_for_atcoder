@@ -2,7 +2,7 @@ import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.
 
 
 long P = 10^^9+7;
-long[10^^6*2+1] F, RF;
+long[10^^6*2+10] F, RF;
 
 long pow(long x, long n) {
     long y = 1;
@@ -37,18 +37,6 @@ void init()
     foreach_reverse(i, ref x; RF[0..$-1]) x = (RF[i+1] * (i+1)) % P;
 }
 
-long comb(N)(N n, N k)
-{
-    if (k > n) return 0;
-    auto n_b = F[n];    // n!
-    auto nk_b = RF[n-k]; // 1 / (n-k)!
-    auto k_b = RF[k];    // 1 / k!
-
-    auto nk_b_k_b = (nk_b * k_b) % P; // 1 / (n-k)!k!
-
-    return (n_b * nk_b_k_b) % P;  // n! / (n-k)!k!
-}
-
 void main()
 {
     init();
@@ -58,11 +46,12 @@ void main()
     auto r2 = rc[2];
     auto c2 = rc[3];
 
-    long ret;
-    foreach (long i; r1..r2+1) {
-        foreach (long j; c1..c2+1) {
-            ret = (ret + (F[i+j] * RF[i]) % P * RF[j] % P) % P;
+    long g(long r, long c) {
+        long x;
+        foreach (i; 1..r+2) {
+            x = (x + F[i+c] * RF[i] % P * RF[c] % P) % P;
         }
+        return x;
     }
-    writeln(ret);
+    writeln( (((g(r2, c2) - g(r1-1, c2) + P) % P - g(r2, c1-1) + P) % P + g(r1-1, c1-1)) % P );
 }
