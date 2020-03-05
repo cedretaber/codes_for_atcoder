@@ -1,7 +1,7 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
 
 ///
-enum EPS = 1.0e-10;
+enum EPS = 1e-10;
 
 ///
 double add(double a, double b) {
@@ -53,12 +53,42 @@ struct P {
     }
 }
 
-P[] circle_intersection(P p1, double r1, P p2, double r2) {
-    if (add(p1.dist(p2), -add(r1, r2)) == 0) return [p1.middle(p2)];
-    auto th = atan2(p2.y - p1.y, p2.x - p1.x);
-    auto len = p1.dist(p2) * r1 / add(r1, r2);
-    auto h = sqrt(add(r1^^2, -len^^2));
-    return [P(add(p1.x, len), add(p1.y, h)).rotate(th), P(add(p1.x, len), add(p1.y, -h)).rotate(th)];
+struct Triangle {
+    P a, b, c;
+
+    this(P a, P b, P c) {
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    }
+
+    alias Circle = Tuple!(P, "p", double, "r");
+
+    Circle enclosing_circle() {
+        auto A = (b-c).dot(b-c);
+        auto B = (c-a).dot(c-a);
+        auto C = (a-b).dot(a-b);
+
+        auto T = A*(B+C-A);
+        auto U = B*(C+A-B);
+        auto W = C*(A+B-C);
+
+        auto p = (a*T + b*U + c*W)/(T + U + W);
+
+        return Circle(p, sqrt((a.x - p.x)^^2 + (a.y - p.y)^^2));
+    }
+
+    Circle circumcenter() {
+        auto y = (
+            (c.x - a.x) * (a.x^^2 + a.y^^2 - b.x^^2 - b.y^^2) - (b.x - a.x) * (a.x^^2 + a.y^^2 - c.x^^2 - c.y^^2)) /
+            (2 * (c.x - a.x) * (a.y - b.y) - 2 * (b.x - a.x) * (a.y - c.y));
+        auto x = b.x - a.x != 0
+            ? (2 * (a.y - b.y) * y - a.x^^2 - a.y^^2 + b.x^^2 + b.y^^2) / (2 * (b.x - a.x))
+            : (2 * (a.y - c.y) * y - a.x^^2 - a.y^^2 + c.x^^2 + c.y^^2) / (2 * (c.x - a.x));
+
+        auto p = P(x, y);
+        return Circle(p, p.dist(a));
+    }
 }
 
 void main()
@@ -70,32 +100,39 @@ void main()
         ps ~= P(xy[0], xy[1]);
     }
 
-    double l = 0, r = 1000;
-    foreach (_; 0..100) {
-        auto m = (l+r)/2;
-        P[] qs;
-        foreach (i; 0..N) {
-            foreach (j; i+1..N) {
-                if (ps[i].dist(ps[j]) <= m*2) {
-                    qs ~= circle_intersection(ps[i], m, ps[j], m);
+    double res = 2000;
+    foreach (i; 0..N-1) {
+        foreach (j; i+1..N) {
+            auto p = ps[i].middle(ps[j]);
+            auto r = p.dist(ps[i]);
+            bool ok = true;
+            foreach (q; ps) if (p.dist(q) > r + EPS) {
+                ok = false;
+                break;
+            }
+            if (ok) {
+                res = min(res, r);
+            }
+        }
+    }
+    foreach (i; 0..N-2) {
+        foreach (j; i+1..N-1) {
+            foreach (k; j+1..N) {
+                auto t = Triangle(ps[i], ps[j], ps[k]);
+                if (t.a.x == t.b.x && t.b.x == t.c.x) continue;
+                if (t.a.y == t.b.y && t.b.y == t.c.y) continue;
+                auto c = t.circumcenter;
+                bool ok = true;
+                foreach (q; ps) if (c.p.dist(q) > c.r + EPS) {
+                    ok = false;
+                    break;
+                }
+                if (ok) {
+                    res = min(res, c.r);
                 }
             }
         }
-        bool ok;
-        foreach (q; qs) {
-            foreach (p; ps) {
-                if (q.dist(p) > m + EPS) goto ng;
-            }
-            ok = true;
-            goto finish;
-            ng:
-        }
-        finish:
-        if (ok) {
-            r = m;
-        } else {
-            l = m;
-        }
     }
-    writefln("%.10f", r);
+
+    writefln("%.10f", res);
 }

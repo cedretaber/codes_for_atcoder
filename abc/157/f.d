@@ -76,10 +76,11 @@ void main()
         auto m = (l+r)/2;
 
         P[] iss;
+        iss ~= ps;
         foreach (i; 0..N-1) {
             foreach (j; i+1..N) {
                 auto r1 = m/cs[i], r2 = m/cs[j];
-                if (ps[i].dist(ps[j]) < add(r1, r2)) {
+                if (ps[i].dist(ps[j]) < add(r1, r2) + EPS) {
                     iss ~= circle_intersection(ps[i], r1, ps[j], r2);
                 }
             }
@@ -88,7 +89,7 @@ void main()
         foreach (q; iss) {
             int k;
             foreach (i, p; ps) {
-                if (p.dist(q) * cs[i] <= m) ++k;
+                if (p.dist(q) * cs[i] < m + EPS) ++k;
             }
             if (k >= K) {
                 r = m;
