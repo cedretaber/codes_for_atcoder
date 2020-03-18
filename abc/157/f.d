@@ -48,13 +48,19 @@ struct P {
     P rotate(double th) {
         return P(x * cos(th) - y * sin(th), x * sin(th) + y * cos(th));
     }
+
+    P rotate(P p, double th) {
+        auto q = P(x - p.x, y - p.y).rotate(th);
+        return P(q.x + p.x, q.y + p.y);
+    }
 }
 
 P[] circle_intersection(P p1, double r1, P p2, double r2) {
+    if (add(p1.dist(p2), -add(r1, r2)) == 0) return [p1.middle(p2)];
     auto th = atan2(p2.y - p1.y, p2.x - p1.x);
-    auto len = p1.dist(p2) * r1 / (r1 + r2);
-    auto h = sqrt(r1^^2 - len^^2);
-    return [P(p1.x + len, p1.y + h).rotate(th), P(p1.x + len, p1.y - h).rotate(th)];
+    auto len = p1.dist(p2) * r1 / add(r1, r2);
+    auto h = sqrt(add(r1^^2, -len^^2));
+    return [P(add(p1.x, len), add(p1.y, h)).rotate(p1, th), P(add(p1.x, len), add(p1.y, -h)).rotate(p1, th)];
 }
 
 void main()
