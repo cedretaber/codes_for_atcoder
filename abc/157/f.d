@@ -57,10 +57,13 @@ struct P {
 
 P[] circle_intersection(P p1, double r1, P p2, double r2) {
     if (add(p1.dist(p2), -add(r1, r2)) == 0) return [p1.middle(p2)];
-    auto th = atan2(p2.y - p1.y, p2.x - p1.x);
+    auto p = P(p2.x - p1.x, p2.y - p1.y);
+    auto th = atan2(p.y, p.x);
     auto len = p1.dist(p2) * r1 / add(r1, r2);
     auto h = sqrt(add(r1^^2, -len^^2));
-    return [P(add(p1.x, len), add(p1.y, h)).rotate(p1, th), P(add(p1.x, len), add(p1.y, -h)).rotate(p1, th)];
+    auto q1 = P(len, h).rotate(th);
+    auto q2 = P(len, -h).rotate(th);
+    return [P(q1.x + p1.x, q1.y + p1.y), P(q2.x + p1.x, q2.y + p1.y)];
 }
 
 void main()
