@@ -1,0 +1,1 @@
+puts (0...200000).to_a.map { [*1..9].sample }.join
