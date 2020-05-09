@@ -1,7 +1,5 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
 
-alias M = Tuple!(int, "d", int, "c");
-
 void main()
 {
     auto N = readln.chomp.to!int;
@@ -9,34 +7,52 @@ void main()
     auto Q = readln.chomp.to!int;
     auto ks = readln.split.to!(int[]);
 
-    int[] ds, cs;
-    M[] ms;
-    foreach (i; 0..N) {
-        if (S[i] == 'D') {
-            ds ~= i;
-        } else if (S[i] == 'M') {
-            if (!ds.empty) ms ~= M(ds.length.to!int-1, 0);
+    auto ms = new long[](N);
+    auto cs = new long[](N);
+    size_t[] dis, cis;
+    long m, c;
+    foreach (i, s; S) {
+        if (s == 'M') ++m;
+        ms[i] = m;
+        if (s == 'D') {
+            dis ~= i;
         }
+        if (s == 'C') {
+            cis ~= i;
+            c++;
+        }
+        cs[i] = c;
     }
-    size_t j = ms.length-1;
-    foreach_reverse (i; 0..N) {
-        if (S[i] == 'C') {
-            cs ~= i;
-        } else if (S[i] == 'M') {
-            if (cs.empty) {
-                ms = ms[0..$-1];
-            } else {
-                ms[j].c = cs.length.to!int-1;
-                if (j == 0) break;
-            }
-            --j;
-        }
+    auto cms = new long[](N);
+    long last;
+    foreach (i, s; S) if (s == 'D' || s == 'C') {
+        if (s == 'C') last += ms[i];
+        cms[i] = last;
     }
 
     foreach (k; ks) {
-        long r;
-        foreach (m; ms) {
-            
+        long res;
+        size_t ci;
+        foreach (i; dis) {
+            while (ci < cis.length && cis[ci] < i) ++ci;
+            if (ci == cis.length) break;
+            if (cis[ci] - i >= k) continue;
+            size_t l = ci, r = cis.length-1;
+            if (cis[$-1] - i < k) {
+                l = r;
+            } else {
+                while (l+1 < r) {
+                    m = (l+r)/2;
+                    if (cis[m] - i >= k) {
+                        r = m;
+                    } else {
+                        l = m;
+                    }
+                }
+            }
+            auto j = cis[l];
+            res += cms[j] - cms[i] - ms[i] * (cs[j] - cs[i]);
         }
+        writeln(res);
     }
 }
