@@ -2,31 +2,30 @@ import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.
 
 void main()
 {
+    auto nk = readln.split.to!(int[]);
+    auto N = nk[0];
+    auto K = nk[1];
 
+    long[] as;
+    foreach (i, a; readln.split) {
+        as ~= a.to!long;
+        if (i) as[i] += as[i-1];
+    }
+    long[long] cs;
+    cs[0] = 1;
+    long r;
+    foreach (i, a; as) {
+        if (i >= K-1) {
+            if (i-K == -1) {
+                --cs[0];
+            } else {
+                auto k = (as[i-K] - (i.to!long-K) - 1) % K;
+                --cs[k];
+            }
+        }
+        auto j = (a - i.to!long - 1) % K;
+        if (j in cs) r += cs[j];
+        ++cs[j];
+    }
+    writeln(r);
 }
-
-/*
-
-1 4 2 3 5
-
-1 0 2 3 1
-
-1 1 3 2 3
-  0 2 1 2
-    2 1 2
-      3 0
-        1
-
-4 2 4 2 4 2 4 2
-
-0 2 0 2 0 2 0 2
-
-10 7
-14 15 92 65 35 89 79 32 38 46
-
-0 1 1 2 0 5 2 4 3 4
-
-0 1 2 4 4 2 4 1 4 1 ->
-1 1 0 6 4 4 6 4 0 4 <-
-
-*/
