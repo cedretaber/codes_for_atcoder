@@ -90,60 +90,62 @@ PriorityQueue!(fun, T) priority_queue(alias fun, T)(T[] ts = []) {
     return PriorityQueue!(fun, T)(ts);
 }
 
-alias Path = Tuple!(long, "to", long, "t", long, "min_t");
-
-Path[][10^^5] PS, RS;
-long[10^^5] TO, FROM;
+alias Path = Tuple!(int, "to", long, "c");
+enum MAX = long.max/3;
 
 void main()
 {
-    auto nmt = readln.split.to!(long[]);
+    auto nmt = readln.split.to!(int[]);
     auto N = nmt[0];
     auto M = nmt[1];
-    auto T = nmt[2];
+    long T = nmt[2];
 
     auto AS = readln.split.to!(long[]);
 
+    Path[][] G, H;
+    G.length = N;
+    H.length = N;
     foreach (_; 0..M) {
-        auto abc = readln.split.to!(long[]);
+        auto abc = readln.split.to!(int[]);
         auto a = abc[0]-1;
         auto b = abc[1]-1;
-        auto c = abc[2];
-        PS[a] ~= Path(b, c, long.max / 4);
-        RS[b] ~= Path(a, c, long.max / 4);
+        long c = abc[2];
+        G[a] ~= Path(b, c);
+        H[b] ~= Path(a, c);
     }
 
-    foreach (i; 0..N) {
-        TO[i] = long.max / 4;
-        FROM[i] = long.max / 4;
+    auto DP1 = new long[](N);
+    DP1[] = MAX;
+    DP1[0] = 0;
+    auto Q = priority_queue!("a < b", Path)([Path(0, 0)]);
+    while (!Q.empty) {
+        auto h = Q.dequeue();
+        if (DP1[h.to] < h.c) continue;
+        foreach (n; G[h.to]) {
+            if (DP1[n.to] <= h.c + n.c) continue;
+            DP1[n.to] = h.c + n.c;
+            Q.enqueue(Path(n.to, h.c + n.c));
+        }
     }
-    TO[0] = FROM[0] = 0;
 
-    auto Q = priority_queue!"a.t < b.t"([Path(0, 0, 0)]);
+    auto DP2 = new long[](N);
+    DP2[] = MAX;
+    DP2[0] = 0;
+    Q = priority_queue!("a < b", Path)([Path(0, 0)]);
     while (!Q.empty) {
-        auto top = Q.dequeue();
-        foreach (ref p; PS[top.to]) {
-            if (p.to && p.min_t > top.min_t + p.t) {
-                if (TO[p.to] > top.min_t + p.t) TO[p.to] = top.min_t + p.t;
-                p = Path(p.to, p.t, top.min_t + p.t);
-                Q.enqueue(p);
-            }
+        auto h = Q.dequeue();
+        if (DP2[h.to] < h.c) continue;
+        foreach (n; H[h.to]) {
+            if (DP2[n.to] <= h.c + n.c) continue;
+            DP2[n.to] = h.c + n.c;
+            Q.enqueue(Path(n.to, h.c + n.c));
         }
     }
-    Q = priority_queue!"a.t < b.t"([Path(0, 0, 0)]);
-    while (!Q.empty) {
-        auto top = Q.dequeue();
-        foreach (ref p; RS[top.to]) {
-            if (p.to && p.min_t > top.min_t + p.t) {
-                if (FROM[p.to] > top.min_t + p.t) FROM[p.to] = top.min_t + p.t;
-                p = Path(p.to, p.t, top.min_t + p.t);
-                Q.enqueue(p);
-            }
-        }
+
+    long r;
+    foreach (i, a; AS) {
+        if (DP1[i] == MAX || DP2[i] == MAX) continue;
+        r = max(r, (T - DP1[i] - DP2[i]) * a);
     }
-    long max_t;
-    foreach (i; 0..N) {
-        max_t = max(max_t, (T - TO[i] - FROM[i]) * AS[i]);
-    }
-    writeln(max_t);
+    writeln(r);
 }
