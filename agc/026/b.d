@@ -1,4 +1,4 @@
-import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math;
+import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
 
 void solve()
 {
@@ -8,27 +8,16 @@ void solve()
     auto C = abcd[2];
     auto D = abcd[3];
 
-    if (A < B) {
+    if (A < B || D < B) {
         writeln("No");
         return;
     }
-
-    auto s = A % B;
-    auto d = D - B;
-    if (d < 0) {
-        writeln("No");
-        return;
-    } else if (d == 0) {
-        writeln(A % B < C ? "No" : "Yes");
-        return;
-    }
-    auto x = (C / d) * d + d;
-    if (x < B) {
-        writeln("No");
-    } else {
+    if (C >= B) {
         writeln("Yes");
+        return;
     }
-    return;
+    auto g = gcd(B, D);
+    writeln(A%g + B-g > C ? "No" : "Yes");
 }
 
 void main()
