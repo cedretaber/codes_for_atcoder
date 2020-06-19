@@ -28,21 +28,17 @@ void main()
         return;
     }
 
-    auto fs = new bool[](N);
     I[] ii;
+    sort(as);
     foreach (i, a; as) ii ~= I(i.to!int, a);
     auto Q = heapify!"a.n > b.n"(ii);
     for (;;) {
         if (B == 0) break;
-        foreach (f; fs) if (!f) goto ng;
-        break;
-        ng:
-
         --B;
         auto h = Q.front;
         Q.popFront();
         as[h.i] *= A;
-        fs[h.i] = true;
+        if (h.i == N-1) break;
         Q.insert(I(h.i, as[h.i]));
     }
     sort(as);
