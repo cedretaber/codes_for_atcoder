@@ -29,5 +29,21 @@ macro_rules! get {
 }
 
 fn main() {
-    let k = get!(usize);
+    let k = get!(i64);
+
+    let mut nn = Vec::new();
+    for i in 0..50_i64 {
+        nn.push(i);
+    }
+    let b = k/50;
+    for i in 0..(50 as usize) {
+        let d = if k%50 > (i as i64) { b + 1 } else { b };
+        nn[i] += d * 50;
+        for j in 0..(50 as usize) {
+            if i != j {
+                nn[j] -= d;
+            }
+        }
+    }
+    println!("50\n{}", nn.into_iter().map(|i| i.to_string()).collect::<Vec<_>>().join(" "));
 }
