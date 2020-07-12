@@ -1,36 +1,55 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
 
-enum n2m = [-1,2,5,5,4,5,6,3,7,6];
-enum ns = [2,3,4,5,6,7];
+enum MM = [0,2,5,5,4,5,6,3,7,6];
 
 void main()
 {
     auto nm = readln.split.to!(int[]);
     auto N = nm[0];
     auto M = nm[1];
-    auto ms = new int[](10);
-    ms[] = 10;
-    foreach (a; readln.split.to!(int[])) if (ms[n2m[a]] > a) ms[n2m[a]] = a;
+    auto ms = new bool[](11);
+    foreach (a; readln.split.to!(int[])) ms[a] = true;
 
-    auto rs = new int[](10);
-    bool solve(int i, int n) {
-        if (i == ns.length) return n == 0;
-        if (ms[ns[i]] == 10) return solve(i+1, n);
-
-        foreach_reverse (j; 0..n/ns[i]+1) {
-            if (n - ns[i]*j < 0) continue;
-            rs[ns[i]] = j;
-            auto ret = solve(i+1, n - ns[i]*j);
-            if (ret) return true;
-            rs[ns[i]] = 0;
+    int[] max_rs(int[] aa, int[] bb) {
+        int ac, bc;
+        foreach (a; aa) ac += a;
+        foreach (b; bb) bc += b;
+        if (ac > bc) {
+            return aa;
+        } else if (ac < bc) {
+            return bb;
         }
-        return false;
+        foreach_reverse (i; 1..10) {
+            if (aa[i] > bb[i]) {
+                return aa;
+            } else if (aa[i] < bb[i]) {
+                return bb;
+            }
+        }
+        return aa;
     }
-    solve(0, N);
 
-    char[] res;
-    foreach_reverse (n; 1..10) if (ms[n2m[n]] == n) {
-        foreach (_; 0..rs[n2m[n]]) res ~= '0' + n.to!char;
+    auto DP = new int[][][](10, N+1, 0);
+    auto ng = new int[](11);
+    ng[0] = -1;
+    int[] solve(int i, int n) {
+        if (i == 10) return n == 0 ? new int[](11) : ng;
+        if (DP[i][n].empty) {
+            if (ms[i] && n >= MM[i]) {
+                auto r1 = solve(i+1, n);
+                auto r2 = solve(i, n-MM[i]).dup;
+                r2[i] += 1;
+                DP[i][n] = max_rs(r1, r2);
+            } else {
+                DP[i][n] = solve(i+1, n);
+            }
+        }
+        return DP[i][n];
     }
-    writeln(res);
+
+    int[] res;
+    foreach_reverse (i, n; solve(1, N)) if (n) {
+        foreach (_; 0..n) res ~= i.to!int;
+    }
+    writeln(res.to!(string[]).join(""));
 }
