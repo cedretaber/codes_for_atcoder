@@ -1,52 +1,46 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.bigint;
 
-long[2][10][2^^10] DP;
-int[26] CI;
-long[10] PS;
-
 void main()
 {
     auto nmyz = readln.split.to!(int[]);
     auto N = nmyz[0];
     auto M = nmyz[1];
-    long Y = nmyz[2];
-    long Z = nmyz[3];
+    auto Y = nmyz[2];
+    auto Z = nmyz[3];
+
+    int[] ps;
+    int[dchar] cs;
 
     foreach (i; 0..M) {
         auto cp = readln.split;
-        auto c = cp[0][0] - 'A';
-        auto p = cp[1].to!long;
-        CI[c] = i;
-        PS[i] = p;
+        auto c = cp[0][0].to!dchar;
+        auto p = cp[1].to!int;
+        cs[c] = i;
+        ps ~= p;
     }
 
-    auto BS = readln.chomp.to!(char[]);
+    auto bs = readln.chomp.to!(dchar[]).map!(c => cs[c]);
 
-    foreach (m; 0..M) foreach (s; 0..(1<<M)) foreach (c; [0, 1]) {
-        DP[s][m][c] = long.min / 3;
-    }
-    foreach (m; 0..(1<<M)) DP[0][m][0] = 0;
-
+    auto DP = new int[][][](2, M+1, 1<<M);
+    foreach (ref dp; DP[0]) dp[] = int.min/3;
+    DP[0][M][0] = 0;
     foreach (i; 0..N) {
-        auto cur = i%2;
-        auto nxt = 1 - i%2;
-
-        foreach (m; 0..M) foreach (s; 0..(1<<M)) {
-            DP[s][m][nxt] = DP[s][m][cur];
-        }
-
-        auto x = CI[BS[i] - 'A'];
-        foreach (m; 0..M) foreach (s; 0..(1<<M)) {
-            DP[s|(1<<x)][x][nxt] = max(
-                DP[s|(1<<x)][x][nxt],
-                DP[s][m][cur] + PS[x] + (i > 0 && m == x && (s&(1<<x)) ? Y : 0)
-            );
+        auto i1 = i%2;
+        auto i2 = (i+1)%2;
+        auto b = bs[i];
+        foreach (ref dp; DP[i2]) dp[] = int.min/3;
+        foreach (j; 0..M+1) {
+            foreach (k; 0..1<<M) {
+                auto kk = k | (1<<b);
+                DP[i2][b][kk] = max(DP[i2][b][kk], DP[i1][j][k] + ps[b] + (j == b ? Y : 0));
+                DP[i2][j][k] = max(DP[i2][j][k], DP[i1][j][k]);
+            }
         }
     }
-
-    auto r = long.min / 3;
-    foreach (m; 0..M) foreach (s; 0..(1<<M)) {
-        r = max(r, DP[s][m][N%2] + (s == (1<<M)-1 ? Z : 0));
+    int max_p;
+    foreach (j; 0..M+1) {
+        foreach (k; 0..(1<<M)-1) max_p = max(max_p, DP[N%2][j][k]);
+        max_p = max(max_p, DP[N%2][j][(1<<M)-1] + Z);
     }
-    writeln(r);
+    writeln(max_p);
 }
