@@ -12,12 +12,13 @@ void main()
 
     auto DP = new int[](N+1);
     DP[0] = 1;
+    DP[1] = -1;
     foreach (i; 0..N) {
         if (hs[i+1] - hs[i] > P) {
             writeln(0);
             return;
         }
-        (DP[i+1] += DP[i]) %= M;
+        (DP[i+1] += DP[i] * 2) %= M;
         if (hs[N] - hs[i] > P) {
             int l = i+1, r = N;
             while (l+1 < r) {
@@ -30,7 +31,6 @@ void main()
             }
             (DP[r] += M - DP[i]) %= M;
         }
-        if (i) (DP[i+1] += DP[i]) %= M;
     }
     writeln(DP[N]);
 }
@@ -46,14 +46,15 @@ void main()
 126
 200
 
-0 1  2  3  4  5  6
-_ 1 -1              1 0
-  _  1  0 -1        1 1
-     _  1  0  0 -1  1 2
-        _  2  0 -2  2 3
-           _  3  0  3 4
-              _  6  6 5
-                    9 6
+0  1  2  3  4  5  6
+1 -1
+_  1 -1              1 0
+   _  1  0 -1        1 1
+      _  1  0  0 -1  1 2
+         _  2  0 -2  2 3
+            _  3  0  3 4
+               _  6  6 5
+                  _  9 6
                   
 
 */
