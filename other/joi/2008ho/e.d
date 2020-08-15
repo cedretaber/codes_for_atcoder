@@ -1,12 +1,11 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
 
-void main()
+static int[] xs1, ys1, xs2, ys2;
+int xlen, ylen;
+
+void read(int H, int W, int N)
 {
-    auto wh = readln.split.to!(int[]);
-    auto W = wh[0];
-    auto H = wh[1];
-    auto N = readln.chomp.to!int;
-    int[] xs = [0], ys = [0], xs1, ys1, xs2, ys2;
+    int[] xs = [0], ys = [0];
     foreach (_; 0..N) {
         auto xy = readln.split.to!(int[]);
         xs ~= [xy[0], xy[2]];
@@ -20,19 +19,25 @@ void main()
     ys ~= H;
 
     sort(xs);
-    xs = xs.uniq().array();
     sort(ys);
-    ys = ys.uniq().array();
-    int[int] xm, ym;
-    foreach (i, x; xs) xm[x] = i.to!int;
-    foreach (i, y; ys) ym[y] = i.to!int;
-    foreach (ref x; xs1) x = xm[x];
-    foreach (ref y; ys1) y = ym[y];
-    foreach (ref x; xs2) x = xm[x];
-    foreach (ref y; ys2) y = ym[y];
+    int[int] mm;
+    foreach (x; xs) if (x !in mm) mm[x] = xlen++;
+    foreach (ref x; xs1) x = mm[x];
+    foreach (ref x; xs2) x = mm[x];
+    mm.clear();
+    foreach (y; ys) if (y !in mm) mm[y] = ylen++;
+    foreach (ref y; ys1) y = mm[y];
+    foreach (ref y; ys2) y = mm[y];
+}
 
-    auto xlen = xs.length;
-    auto ylen = ys.length;
+void main()
+{
+    auto wh = readln.split.to!(int[]);
+    auto W = wh[0];
+    auto H = wh[1];
+    auto N = readln.chomp.to!int;
+    read(H, W, N);
+
     auto T = new int[][](ylen, xlen);
     foreach (i; 0..N) {
         auto x1 = xs1[i];
@@ -53,15 +58,17 @@ void main()
         T[i][j] = c;
         auto ss = [[i, j]];
         while (!ss.empty) {
-            auto h = ss[0];
-            ss = ss[1..$];
-            foreach (d; [[1,0], [0,1], [-1,0], [0,-1]]) {
-                auto y = h[0]+d[0];
-                auto x = h[1]+d[1];
-                if (y < 0 || y >= ylen-1 || x < 0 || x >= xlen-1 || T[y][x] != 0) continue;
-                T[y][x] = c;
-                ss ~= [y, x];
+            int[][] nss;
+            foreach (h; ss) {
+                foreach (d; [[1,0], [0,1], [-1,0], [0,-1]]) {
+                    auto y = h[0]+d[0];
+                    auto x = h[1]+d[1];
+                    if (y < 0 || y >= ylen-1 || x < 0 || x >= xlen-1 || T[y][x] != 0) continue;
+                    T[y][x] = c;
+                    nss ~= [y, x];
+                }
             }
+            ss = nss;
         }
     }
     writeln(abs(c));
