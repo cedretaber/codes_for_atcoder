@@ -73,14 +73,14 @@ void main()
     foreach (_, ref v; rmps) sort(v);
     foreach (_, ref v; lpps) sort(v);
     foreach (_, ref v; lmps) sort(v);
-    void update_parpendicular(int a, int b) {
+    void update_perpendicular(int a, int b) {
         res = min(res, abs(a - b) * 10);
     }
-    void parpendicular_direction_up(int key, P p, int[][int] pps) {
+    void perpendicular_direction_up(int key, P p, int[][int] pps) {
         if (key in pps) {
             auto rr = pps[key];
             if (rr[0] > p.y) {
-                update_parpendicular(rr[0], p.y);
+                update_perpendicular(rr[0], p.y);
             } else if (rr[$-1] > p.y) {
                 int l, r = rr.length.to!int-1;
                 while (l+1 < r) {
@@ -91,19 +91,19 @@ void main()
                         l = m;
                     }
                 }
-                update_parpendicular(rr[r], p.y);
+                update_perpendicular(rr[r], p.y);
             }
         }
     }
     foreach (p; ups) {
-        parpendicular_direction_up(p.x-p.y, p, lmps);
-        parpendicular_direction_up(p.x+p.y, p, rpps);
+        perpendicular_direction_up(p.x-p.y, p, lmps);
+        perpendicular_direction_up(p.x+p.y, p, rpps);
     }
-    void parpendicular_direction_down(int key, P p, int[][int] pps) {
+    void perpendicular_direction_down(int key, P p, int[][int] pps) {
         if (key in pps) {
             auto rr = pps[key];
             if (rr[$-1] < p.y) {
-                update_parpendicular(rr[$-1], p.y);
+                update_perpendicular(rr[$-1], p.y);
             } else if (rr[0] < p.y) {
                 int l, r = rr.length.to!int-1;
                 while (l+1 < r) {
@@ -114,13 +114,13 @@ void main()
                         r = m;
                     }
                 }
-                update_parpendicular(rr[l], p.y);
+                update_perpendicular(rr[l], p.y);
             }
         }
     }
     foreach (p; dps) {
-        parpendicular_direction_down(p.x-p.y, p, rmps);
-        parpendicular_direction_down(p.x+p.y, p, lpps);
+        perpendicular_direction_down(p.x-p.y, p, rmps);
+        perpendicular_direction_down(p.x+p.y, p, lpps);
     }
 
     if (res == int.max) {
