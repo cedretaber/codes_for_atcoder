@@ -1,5 +1,5 @@
-import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
-
+import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.container, std.range;
+import core.bitop;
 
 long P = 10^^9+7;
 long[10^^5+50] F, RF;
@@ -12,6 +12,11 @@ long pow(long x, long n) {
         n /= 2;
     }
     return y;
+}
+
+long inv(long x)
+{
+    return pow(x, P-2);
 }
 
 void init()
@@ -60,14 +65,21 @@ void main()
     auto s = X*Y;
     auto d = comb(s, D);
     auto l = comb(s-D, L);
-    auto x = (d*l) % P;
-    auto t = s - (X-1)*2 - (Y-1)*2;
-    d = comb(t, D);
-    l = 0;
-    if (t-D > 0) l = comb(t-D, L);
-    auto y = (d*l) % P;
-    auto z = (x-y+P) % P;
+    auto m = d * l % P;
+
+    foreach (b; 1..2^^4) {
+        auto x = X, y = Y;
+        if (b&1) --x;
+        if (b&2) --x;
+        if (b&4) --y;
+        if (b&8) --y;
+        s = x * y;
+        d = comb(s, D);
+        l = 0;
+        if (s-D > 0) l = comb(s-D, L);
+        (m += d * l % P * (popcnt(b)%2 == 1 ? -1 : 1) + P) %= P;
+    }
+
     auto n = (R-X+1) * (C-Y+1);
-    
-    writeln((z * n) % P);
+    writeln((m * n) % P);
 }
