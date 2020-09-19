@@ -62,7 +62,7 @@ auto seg_tree(alias f, alias E, T)(T[] arr)
 
 auto max_seg_tree(T)(size_t n, T[] arr = [])
 {
-    return seg_tree!("a > b ? a : b", T.min, T)(n, arr);
+    return seg_tree!("a > b ? a : b", 0, T)(n, arr);
 }
 
 auto max_seg_tree(T)(T[] arr)
@@ -78,33 +78,34 @@ void main()
     auto N = nq[0];
     auto Q = nq[1];
 
-    auto lms = new int[](N);
-    int min_w = N;
-    auto bms = new int[](N);
-    int min_v = N;
     alias SEGT = typeof(max_seg_tree!int(N));
-    auto wsegt = max_seg_tree!int(N);
-    auto vsegt = max_seg_tree!int(N);
-
-    long r = (N.to!long-1)^^2;
-
-    void put(int p, int min_line, int min_line_opposite, ref int[] our_lines, ref int[] other_lines, SEGT segt) {
-        auto above = segt.query(p);
+    long r = (N.to!long-2)^^2;
+    void put(int p, ref int min_line, int min_line_opposite, ref int[] lines, SEGT segt) {
+        segt.update(p, p+1);
+        auto above = segt.query(0, p);
         if (above) {
-            r -= our_lines[above];
+            lines[p] = lines[above-1];
         } else {
             min_line = p;
-
+            lines[p] = min_line_opposite - 1;
         }
+        r -= lines[p];
     }
 
+    auto lms = new int[](N);
+    int min_w = N-1;
+    auto bms = new int[](N);
+    int min_v = N-1;
+    auto wsegt = max_seg_tree!int(N);
+    auto vsegt = max_seg_tree!int(N);
     foreach (_; 0..Q) {
         auto q = readln.split.to!(int[]);
-        auto n = q[1];
+        auto x = q[1]-1;
         if (q[0] == 1) {
-
+            put(x, min_v, min_w, lms, wsegt);
         } else {
-
+            put(x, min_w, min_v, bms, vsegt);
         }
     }
+    writeln(r);
 }
