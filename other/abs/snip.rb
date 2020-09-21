@@ -1,0 +1,1 @@
+puts File.read("./test.d").lines.map { |line| line.chomp.inspect }.join(",\n")
