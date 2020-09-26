@@ -68,5 +68,10 @@ void main()
 8
 9
 
+P(0,0) = F
+P(1,0) = F
+P(x, y) if y > x = P(y, x)
+P(x, y) = (not P(x-2, y+1)) || (not (P(x+1, y-2)))
+
 
 */
