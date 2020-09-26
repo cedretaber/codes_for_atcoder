@@ -1,5 +1,8 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.container, std.range;
 
+void get(T)(ref T str)
+    if ()
+
 void get(Args...)(ref Args args)
 {
     import std.traits, std.meta, std.typecons;
