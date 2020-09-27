@@ -1,7 +1,4 @@
-import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.container, std.range;
-
-void get(T)(ref T str)
-    if ()
+import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.container, std.range, std.traits, std.meta;
 
 void get(Args...)(ref Args args)
 {
@@ -11,7 +8,11 @@ void get(Args...)(ref Args args)
         alias Arg = Args[0];
         
         static if (isArray!Arg) {
-            args[0] = readln.split.to!Arg;
+            static if (isSomeChar!(ElementType!T)) {
+                args[0] = readln.chomp.to!Arg;
+            } else {
+                args[0] = readln.split.to!Arg;
+            }
         } else static if (isTuple!Arg) {
             auto input = readln.split;
             static foreach (i; 0..Fields!Arg.length) {
