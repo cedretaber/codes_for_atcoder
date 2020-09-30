@@ -8,7 +8,7 @@ void get(Args...)(ref Args args)
         alias Arg = Args[0];
         
         static if (isArray!Arg) {
-            static if (isSomeChar!(ElementType!T)) {
+            static if (isSomeChar!(ElementType!Arg)) {
                 args[0] = readln.chomp.to!Arg;
             } else {
                 args[0] = readln.split.to!Arg;
