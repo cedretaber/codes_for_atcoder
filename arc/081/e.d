@@ -1,1 +1,103 @@
-import std.stdio, std.algorithm, std.conv, std.array, std.string;
+import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.container, std.range;
+
+void get(Args...)(ref Args args)
+{
+    import std.traits, std.meta, std.typecons;
+
+    static if (Args.length == 1) {
+        alias Arg = Args[0];
+        
+        static if (isArray!Arg) {
+          static if (isSomeChar!(ElementType!Arg)) {
+            args[0] = readln.chomp.to!Arg;
+          } else {
+            args[0] = readln.split.to!Arg;
+          }
+        } else static if (isTuple!Arg) {
+            auto input = readln.split;
+            static foreach (i; 0..Fields!Arg.length) {
+                args[0][i] = input[i].to!(Fields!Arg[i]);
+            }
+        } else {
+            args[0] = readln.chomp.to!Arg;
+        }
+    } else {
+        auto input = readln.split;
+        assert(input.length == Args.length);
+
+        static foreach (i; 0..Args.length) {
+            args[i] = input[i].to!(Args[i]);
+        }
+    }
+}
+
+void get_lines(Args...)(size_t N, ref Args args)
+{
+    import std.traits, std.range;
+
+    static foreach (i; 0..Args.length) {
+        static assert(isArray!(Args[i]));
+        args[i].length = N;
+    }
+
+    foreach (i; 0..N) {
+        static if (Args.length == 1) {
+            get(args[0][i]);
+        } else {
+            auto input = readln.split;
+            static foreach (j; 0..Args.length) {
+                args[j][i] = input[j].to!(ElementType!(Args[j]));
+            }
+        }
+    }
+}
+
+void main()
+{
+    string A; get(A);
+    auto N = A.length.to!int;
+
+    auto ns = new int[][](N, 26);
+    int[26] li;
+    li[] = -1;
+    foreach_reverse (i, c; A) {
+        ns[i][] = li[];
+        li[c - 'a'] = i.to!int;
+    }
+    foreach (c, i; li) if (i == -1) {
+        writeln([cast(char)(c + 'a')]);
+        return;
+    }
+
+    auto nx = new int[](N);
+    auto DP = new int[](N);
+loop:
+    foreach_reverse (i; 0..N) {
+        int n, x = int.max;
+        foreach (j, m; ns[i]) {
+            if (m == -1) {
+                nx[i] = j.to!int;
+                DP[i] = 2;
+                continue loop;
+            }
+            if (DP[m] + 1 < x) {
+                n = m;
+                x = DP[m] + 1;
+            }
+        }
+        nx[i] = n;
+        DP[i] = x;
+    }
+    auto min_l = li[].map!(n => DP[n]).minElement();
+    foreach (i; li) if (DP[i] == min_l) {
+        char[] res;
+        while (DP[i] != 2) {
+            res ~= A[i];
+            i = nx[i];
+        }
+        res ~= A[i];
+        res ~= cast(char)(nx[i] + 'a');
+        writeln(res);
+        return;
+    }
+}
