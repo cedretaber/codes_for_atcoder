@@ -1,0 +1,103 @@
+import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.container, std.range;
+
+void get(Args...)(ref Args args)
+{
+    import std.traits, std.meta, std.typecons;
+
+    static if (Args.length == 1) {
+        alias Arg = Args[0];
+        
+        static if (isArray!Arg) {
+          static if (isSomeChar!(ElementType!Arg)) {
+            args[0] = readln.chomp.to!Arg;
+          } else {
+            args[0] = readln.split.to!Arg;
+          }
+        } else static if (isTuple!Arg) {
+            auto input = readln.split;
+            static foreach (i; 0..Fields!Arg.length) {
+                args[0][i] = input[i].to!(Fields!Arg[i]);
+            }
+        } else {
+            args[0] = readln.chomp.to!Arg;
+        }
+    } else {
+        auto input = readln.split;
+        assert(input.length == Args.length);
+
+        static foreach (i; 0..Args.length) {
+            args[i] = input[i].to!(Args[i]);
+        }
+    }
+}
+
+void get_lines(Args...)(size_t N, ref Args args)
+{
+    import std.traits, std.range;
+
+    static foreach (i; 0..Args.length) {
+        static assert(isArray!(Args[i]));
+        args[i].length = N;
+    }
+
+    foreach (i; 0..N) {
+        static if (Args.length == 1) {
+            get(args[0][i]);
+        } else {
+            auto input = readln.split;
+            static foreach (j; 0..Args.length) {
+                args[j][i] = input[j].to!(ElementType!(Args[j]));
+            }
+        }
+    }
+}
+
+void main()
+{
+    int N, K; get(N, K);
+    dchar[] S; get(S);
+
+    if (K < 2) {
+        writeln(S);
+        return;
+    }
+
+    int['z'+1] ii, jj;
+    foreach (c; S) {
+        ii[c]++;
+        jj[c]++;
+    }
+    auto T = new char[](N);
+    foreach (i; 0..N) {
+        ii[S[i]]--;
+        foreach (c; 'a'..'z'+1) {
+            if (jj[c] <= 0) continue;
+            jj[c]--;
+            int k = N-i;
+            if (c == S[i]) k--;
+            foreach (j; 'a'..'z'+1) k -= min(ii[j], jj[j]);
+            if (k <= K) {
+                T[i] = c.to!char;
+                if (c != S[i]) K--;
+                break;
+            }
+            jj[c]++;
+        }
+    }
+    writeln(T);
+}
+
+/*
+
+atcoder
+acdeort
+
+actoder
+
+helloworld
+dehllloorw
+
+*.*......*
+dehloworll
+
+*/
