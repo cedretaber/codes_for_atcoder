@@ -62,26 +62,29 @@ void main()
         return;
     }
 
-    int['z'+1] ii, jj;
+    int['z'+1] cs, ds;
     foreach (c; S) {
-        ii[c]++;
-        jj[c]++;
+        ++cs[c];
+        ++ds[c];
     }
-    auto T = new char[](N);
-    foreach (i; 0..N) {
-        ii[S[i]]--;
-        foreach (c; 'a'..'z'+1) {
-            if (jj[c] <= 0) continue;
-            jj[c]--;
-            int k = N-i;
-            if (c == S[i]) k--;
-            foreach (j; 'a'..'z'+1) k -= min(ii[j], jj[j]);
-            if (k <= K) {
-                T[i] = c.to!char;
-                if (c != S[i]) K--;
+
+    char[] T;
+    foreach (c; S) {
+        --cs[c];
+        foreach (d; 'a'..'z'+1) {
+            if (ds[d] == 0) continue;
+            if (c != d) --K;
+            --ds[d];
+            int k;
+            foreach (e; 'a'..'z'+1) {
+                k += abs(cs[e] - ds[e]);
+            }
+            if (K >= k/2) {
+                T ~= d;
                 break;
             }
-            jj[c]++;
+            ++ds[d];
+            if (c != d) ++K;
         }
     }
     writeln(T);
