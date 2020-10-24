@@ -52,37 +52,54 @@ void get_lines(Args...)(size_t N, ref Args args)
     }
 }
 
+enum P = 998244353L;
+
+long pow(long x, long n) {
+    long y = 1;
+    while (n) {
+        if (n%2 == 1) y = (y * x) % P;
+        x = x^^2 % P;
+        n /= 2;
+    }
+    return y;
+}
+
+long inv(long x)
+{
+    return pow(x, P-2);
+}
+
 void main()
 {
+    int N, K; get(N, K);
+    long[] AS; get(AS);
 
+    auto FS = new long[](K+1);
+    FS[0] = FS[1] = 1;
+    foreach (i; 2..K+1) FS[i] = FS[i-1] * i % P;
+    auto memo = new long[](K+1);
+    foreach (k; 0..K+1) {
+        foreach (i; 0..N) {
+            (memo[k] += pow(AS[i], k)) %= P;
+        }
+    }
+
+    foreach (x; 1..K+1) {
+        long n, r;
+        foreach (k; 0..x+1) {
+            (n += memo[k] * memo[x-k] % P * inv(FS[k]) % P * inv(FS[x-k]) % P) %= P;
+        }
+        foreach (i; 0..N) {
+            (r += pow(AS[i] * 2 % P, x)) %= P;
+        }
+        n = (n * FS[x] % P - r + P) % P * inv(2) % P;
+        writeln(n);
+    }
 }
 
 /*
 
-(a+b) + (a+c) + (b+c)
-
-
-a b c
-
-(a+b) + (a+c) + (b+c)
-=> 2a + 2b + 2c
-((a+b) + (a+c) + (b+c))^2
-=> (a+b)^2 + (a+c)^2 + (b+c)^2 + 2(a+b)(a+c) + 2(a+b)(b+c) + 2(a+c)(b+c)
-
-(a+b)^2 + (a+c)^2 + (b+c)^2
-a^2 + 2ab + b^2 + a^2 + 2ac + c^2 + b^2 + 2bc + c^2
-=> 2a^2 + 2b^2 + 2c^2 + 2ab + 2ac + 2bc
-
-
-(a+b)^3 + (a+c)^3 + (b+c)^3
-=> 2a^3 + 2b^3 + 2c^3 + 3a^2b + 3ab^2 + 3a^2c + 3ac^2 + 3b^2c + 3bc^2
-
-
-10 10
-1 1 1 1 1 1 1 1 1 1
-9*10
-9*10*2
-
-Sum[ (A_i + A_i+1)^x + (A_i + A_i+2)^x + ... (A_i + A_N)^x ]
+X! * S{k=0->x}( (1/k!) * (1/(X-k)) * S{i=1->N}(A_i^k) * S{j=1->N}(A_j^(X-k)) )
+- S{i=1->N}((A_i * 2)^k) / 2
 
 */
