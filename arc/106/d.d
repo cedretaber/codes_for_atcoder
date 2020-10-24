@@ -82,15 +82,19 @@ void main()
         foreach (i; 0..N) {
             (memo[k] += pow(AS[i], k)) %= P;
         }
+        (memo[k] *= inv(FS[k])) %= P;
     }
-
+    auto qs = new long[](N);
+    qs[] = AS[];
+    (qs[] *= 2)[] %= P;
     foreach (x; 1..K+1) {
         long n, r;
         foreach (k; 0..x+1) {
-            (n += memo[k] * memo[x-k] % P * inv(FS[k]) % P * inv(FS[x-k]) % P) %= P;
+            (n += memo[k] * memo[x-k] % P) %= P;
         }
         foreach (i; 0..N) {
-            (r += pow(AS[i] * 2 % P, x)) %= P;
+            (r += qs[i]) %= P;
+            (qs[i] *= (AS[i] + AS[i]) % P) %= P;
         }
         n = (n * FS[x] % P - r + P) % P * inv(2) % P;
         writeln(n);
