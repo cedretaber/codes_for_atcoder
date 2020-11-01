@@ -110,6 +110,79 @@ struct P {
     }
 }
 
+struct Dsu
+{
+public:
+    this(int n) @safe nothrow
+    {
+        _n = n, parent_or_size = new int[](n);
+        parent_or_size[] = -1;
+    }
+
+    int merge(int a, int b) @safe nothrow @nogc
+    {
+        assert(0 <= a && a < _n);
+        assert(0 <= b && b < _n);
+        int x = leader(a), y = leader(b);
+        if (x == y)
+            return x;
+        if (-parent_or_size[x] < -parent_or_size[y])
+        {
+            auto tmp = x;
+            x = y;
+            y = tmp;
+        }
+        parent_or_size[x] += parent_or_size[y];
+        parent_or_size[y] = x;
+        return x;
+    }
+
+    bool same(int a, int b) @safe nothrow @nogc
+    {
+        assert(0 <= a && a < _n);
+        assert(0 <= b && b < _n);
+        return leader(a) == leader(b);
+    }
+
+    int leader(int a) @safe nothrow @nogc
+    {
+        assert(0 <= a && a < _n);
+        if (parent_or_size[a] < 0)
+            return a;
+        return parent_or_size[a] = leader(parent_or_size[a]);
+    }
+
+    int size(int a) @safe nothrow @nogc
+    {
+        assert(0 <= a && a < _n);
+        return -parent_or_size[leader(a)];
+    }
+
+    int[][] groups() @safe nothrow
+    {
+        auto leader_buf = new int[](_n), group_size = new int[](_n);
+        foreach (i; 0 .. _n)
+        {
+            leader_buf[i] = leader(i);
+            group_size[leader_buf[i]]++;
+        }
+        auto result = new int[][](_n);
+        foreach (i; 0 .. _n)
+            result[i].reserve(group_size[i]);
+        foreach (i; 0 .. _n)
+            result[leader_buf[i]] ~= i;
+        int[][] filtered;
+        foreach (r; result)
+            if (r.length != 0)
+                filtered ~= r;
+        return filtered;
+    }
+
+private:
+    int _n;
+    int[] parent_or_size;
+}
+
 void main()
 {
     int N; get(N);
@@ -118,4 +191,24 @@ void main()
         double x, y; get(x, y);
         ps ~= P(x, y);
     }
+
+    double l = 1, r = 200;
+    foreach (_; 0..100) {
+        auto m = (l+r)/2;
+
+        auto uft = Dsu(N+2);
+        foreach (i; 0..N) {
+            if (100 - ps[i].y < m) uft.merge(0, i+1);
+            if (100 + ps[i].y < m) uft.merge(N+1, i+1);
+        }
+        foreach (i; 0..N-1) foreach (j; i+1..N) if (ps[i].dist(ps[j]) < m) {
+            uft.merge(i+1, j+1);
+        }
+        if (uft.same(0, N+1)) {
+            r = m;
+        } else {
+            l = m;
+        }
+    }
+    writefln!"%.12f"(l / 2);
 }
