@@ -53,10 +53,10 @@ void get_lines(Args...)(size_t N, ref Args args)
 }
 
 ///
-enum double EPS = 1e-10;
+enum real EPS = 1e-10;
 
 ///
-double add(double a, double b) {
+real add(real a, real b) {
     if (abs(a + b) < EPS * (abs(a) + abs(b))) return 0;
     return a + b;
 }
@@ -64,9 +64,9 @@ double add(double a, double b) {
 ///
 struct P {
     int i;
-    double x, y;
+    real x, y;
 
-    this(double x, double y) {
+    this(real x, real y) {
         this.x = x;
         this.y = y;
     }
@@ -77,27 +77,27 @@ struct P {
         else static assert(0, "Operator '"~op~"' not implemented");
     }
 
-    P opBinary(string op)(double d) {
+    P opBinary(string op)(real d) {
         static if (op == "*") return P(x * d, y * d);
         else static if (op == "/") return P(x / d, y / d);
         else static assert(0, "Operator '"~op~"' not implemented");
     }
 
-    double norm() {
+    real norm() {
         return sqrt(add(x^^2, y^^2));
     }
 
     // dot product
-    double dot(P p) {
+    real dot(P p) {
         return add(x * p.x, y * p.y);
     }
 
     // cross product
-    double det(P p) {
+    real det(P p) {
         return add(x * p.y, -y * p.x);
     }
 
-    double dist(P p) {
+    real dist(P p) {
         return sqrt((x - p.x)^^2 + (y - p.y)^^2);
     }
 
@@ -105,11 +105,11 @@ struct P {
         return P((x + p.x)/2, (y + p.y)/2);
     }
 
-    P rotate(double th) {
+    P rotate(real th) {
         return P(add(x * cos(th), -y * sin(th)), add(x * sin(th), y * cos(th)));
     }
 
-    P rotate(P p, double th) {
+    P rotate(P p, real th) {
         auto q = P(x - p.x, y - p.y).rotate(th);
         return P(q.x + p.x, q.y + p.y);
     }
@@ -146,7 +146,7 @@ void main()
     int N; get(N);
     P[] ps;
     foreach (i; 0..N) {
-        double x, y; get(x, y);
+        real x, y; get(x, y);
         auto p = P(x, y);
         p.i = i;
         ps ~= p;
@@ -166,7 +166,7 @@ void main()
     }
     {
         sort!"a.x == b.x ? a.y < b.y : a.x < b.x"(ps);
-        auto res = new double[](N);
+        auto res = new real[](N);
         res[] = 0;
         res[ps[0].i] = 0.5;
         res[ps[$-1].i] = 0.5;
@@ -177,7 +177,7 @@ void main()
     not_on_a_line:
     
     ps = convex_hull(ps);
-    auto res = new double[](N);
+    auto res = new real[](N);
     res[] = 0;
     foreach (i, p; ps) {
         auto o = i == 0 ? ps[$-1] : ps[i-1];
@@ -188,7 +188,8 @@ void main()
         q.y -= p.y;
         
         auto r = acos(o.dot(q) / o.norm / q.norm);
-        res[p.i] = (PI - r) / (2 * PI);
+        auto x = (PI - r) / (2 * PI);
+        res[p.i] = x;
     }
     writefln!"%(%.12f\n%)"(res);
 }
