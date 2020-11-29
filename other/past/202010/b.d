@@ -58,11 +58,7 @@ void main()
     if (Y == 0) {
         writeln("ERROR");
     } else {
-        auto r = format!"%02d"(X * 100 / Y);
-        if (r.length <= 2) {
-            writeln("0.", r);
-        } else {
-            writeln(r[0..$-2], ".", r[$-2..$]);
-        }
+        auto r = format!"%03d"(X * 100 / Y);
+        writeln(r[0..$-2], ".", r[$-2..$]);
     }
 }
