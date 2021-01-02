@@ -66,15 +66,21 @@ void main()
 
     auto bs = new int[](1<<N);
     bs[] = int.max / 3;
-    bs[0] = 0;
-    foreach (b; 1..(1<<N)) {
+    int[] xs;
+    foreach (b; 0..(1<<N)) {
         foreach (i; 0..N) foreach (j; 0..N) if ((b & (1<<i)) && (b & (1<<j)) && !G[i][j]) goto ng;
         bs[b] = 1;
+        xs ~= b;
         ng:
     }
+    bs[0] = 0;
+    sort!((a, b) => popcnt(a) < popcnt(b))(xs);
 
-    foreach (x; 1..(1<<N)) {
-        auto c = popcnt(x);
-        if (c == 1) continue;
+    foreach (x; xs) {
+        auto cx = (1<<N) - 1 - x;
+        for (auto y = cx; y; y = (y-1) & cx) {
+            bs[x | y] = min(bs[x | y], bs[x] + bs[y]);
+        }
     }
+    writeln(bs[(1<<N) - 1]);
 }
