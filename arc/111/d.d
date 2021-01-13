@@ -52,22 +52,8 @@ void get_lines(Args...)(size_t N, ref Args args)
     }
 }
 
+alias E = Tuple!(int, "i", int, "to", bool, "rev");
 alias C = Tuple!(int, "i", int, "c");
-
-struct E {
-    int i, to;
-    bool rev;
-
-    bool is_go(int[] ds) {
-        auto d = ds[i];
-        return (d == 1 && !rev) || (d == -1 && rev);
-    }
-
-    @property
-    int back() {
-        return rev ? 1 : -1;
-    }
-}
 
 void main()
 {
@@ -86,11 +72,9 @@ void main()
 
     auto memo = new int[](N);
     foreach (c; cc) {
-        auto r = 1;
-        foreach (n; G[c.i]) if (n.is_go(ds)) r += cs[n.to];
         void solve(int i) {
             foreach (n; G[i]) if (ds[n.i] == 0) {
-                ds[n.i] = n.back;
+                ds[n.i] = n.rev ? 1 : -1;
                 if (cs[n.to] == cs[c.i] && !memo[n.to]) {
                     memo[n.to] = true;
                     solve(n.to);
