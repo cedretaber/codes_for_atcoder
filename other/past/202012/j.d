@@ -57,28 +57,17 @@ void main()
     char[] S; get(S);
     while (S[0] < 'a') S.popFront();
     long[] ps;
-    long p;
-    foreach (c; S) {
-        if (c < 'a') p = p * (c - '0' + 1).to!long - 1;
-        ps ~= p++;
-        if (p > 10L^^16) break;
+    {
+        long p;
+        foreach (c; S) {
+            if (c < 'a') p = p * (c - '0' + 1).to!long - 1;
+            ps ~= p++;
+            if (p > 10L^^16) break;
+        }
     }
     long X; get(X); --X;
-    for (;;) {
-        if (X == 0) return writeln(S[0]);
-        int l, r = ps.length.to!int - 1;
-        while (l+1 < r) {
-            auto m = (l+r) / 2;
-            if (ps[m] >= X) {
-                r = m;
-            } else {
-                l = m;
-            }
-        }
-        if (S[r] < 'a') {
-            X %= ps[l] + 1;
-        } else {
-            return writeln(S[r]);
-        }
+    foreach_reverse (i, p; ps) if (p <= X) {
+        X %= p + 1;
+        if (p == X && S[i] >= 'a') return writeln(S[i]);
     }
 }
