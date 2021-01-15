@@ -59,8 +59,8 @@ void main()
     auto DP = new double[](2^^16);
     DP[0] = 0;
 
-    double solve() {
-        if (!isNaN(DP[S])) return DP[S];
+    double solve(uint s) {
+        if (!isNaN(DP[s])) return DP[s];
 
         auto r = double.infinity;
         foreach (i; 0..4) foreach (j; 0..4) {
@@ -68,23 +68,17 @@ void main()
             static foreach (d; [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) {{
                 auto ii = i + d[0];
                 auto jj = j + d[1];
-                if (0 <= ii && ii < 4 && 0 <= jj && jj < 4) {
-                    auto k = ii * 4 + jj;
-                    if (S & (1 << k)) {
-                        S &= ~(1<<k);
-                        x += solve() * 0.2;
-                        S |= (1<<k);
-                    } else {
-                        y -= 0.2;
-                    }
+                auto k = ii * 4 + jj;
+                if (0 <= ii && ii < 4 && 0 <= jj && jj < 4 && (s & (1 << k))) {
+                    x += solve(s & ~(1<<k)) * 0.2;
                 } else {
                     y -= 0.2;
                 }
             }}
             r = min(r, x / y);
         }
-        return DP[S] = r;
+        return DP[s] = r;
     }
 
-    writefln!"%.012f"(solve());
+    writefln!"%.012f"(solve(S));
 }
