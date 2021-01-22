@@ -1,74 +1,120 @@
-import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric;
+import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.container, std.range;
 
-int[][700] PS;
-bool[700] F;
+void get(Args...)(ref Args args)
+{
+    import std.traits, std.meta, std.typecons;
+
+    static if (Args.length == 1) {
+        alias Arg = Args[0];
+        
+        static if (isArray!Arg) {
+          static if (isSomeChar!(ElementType!Arg)) {
+            args[0] = readln.chomp.to!Arg;
+          } else {
+            args[0] = readln.split.to!Arg;
+          }
+        } else static if (isTuple!Arg) {
+            auto input = readln.split;
+            static foreach (i; 0..Fields!Arg.length) {
+                args[0][i] = input[i].to!(Fields!Arg[i]);
+            }
+        } else {
+            args[0] = readln.chomp.to!Arg;
+        }
+    } else {
+        auto input = readln.split;
+        assert(input.length == Args.length);
+
+        static foreach (i; 0..Args.length) {
+            args[i] = input[i].to!(Args[i]);
+        }
+    }
+}
+
+void get_lines(Args...)(size_t N, ref Args args)
+{
+    import std.traits, std.range;
+
+    static foreach (i; 0..Args.length) {
+        static assert(isArray!(Args[i]));
+        args[i].length = N;
+    }
+
+    foreach (i; 0..N) {
+        static if (Args.length == 1) {
+            get(args[0][i]);
+        } else {
+            auto input = readln.split;
+            static foreach (j; 0..Args.length) {
+                args[j][i] = input[j].to!(ElementType!(Args[j]));
+            }
+        }
+    }
+}
 
 void main()
 {
-    auto nm = readln.split.to!(int[]);
-    auto N = nm[0];
-    auto M = nm[1];
-    auto QS = new bool[][](N, N);
-    foreach (_; 0..M) {
-        auto ab = readln.split.to!(int[]);
-        auto A = ab[0]-1;
-        auto B = ab[1]-1;
-        PS[A] ~= B;
-        PS[B] ~= A;
-        QS[A][B] = true;
-        QS[B][A] = true;
+    int N, M; get(N, M);
+    auto C = new bool[][](N, N);
+    while (M--) {
+        int A, B; get(A, B); --A; --B;
+        C[A][B] = true;
+        C[B][A] = true;
+    }
+    auto G = new int[][N];
+    foreach (i; 0..N-1) foreach (j; i+1..N) if (!C[i][j]) {
+        G[i] ~= j;
+        G[j] ~= i;
     }
 
-    auto SS = new int[](N);
-    foreach (int i; 1..N) SS[i] = SS[i-1] + i;
-
-    int[] solve(int i, int[] ss) {
-        int[] ret = ss;
-        foreach (n; PS[i]) if (!F[n]) {
-            int[] r;
-            foreach (s; ss) if (!QS[n][s]) goto ng;
-            F[n] = true;
-            r = solve(n, ss ~ n);
-            F[n] = false;
-            if (r.length > ret.length) ret = r;
-            ng:
+    auto cs = new int[](N);
+    int c = -1;
+    int[2] cc;
+    int[] xs, ys;
+    foreach (i; 0..N) if (cs[i] == 0) {
+        c += 2;
+        cc[0] = c;
+        cc[1] = c + 1;
+        bool put(int i, int x) {
+            auto c = cc[x];
+            auto d = cc[(x + 1) % 2];
+            cs[i] = c;
+            foreach (j; G[i]) {
+                if (cs[j] == c) return false;
+                if (cs[j] == 0 && !put(j, (x + 1) % 2)) return false;
+            }
+            return true;
         }
-        return ret;
-    }
-    auto ss = solve(0, [0]);
-
-    auto FX = new int[](N);
-    foreach (s; ss) FX[s] = 1;
-
-    int x = -1;
-    foreach (int i; 0..N) if (FX[i] != 1) {
-        x = i;
-        break;
-    }
-    if (x == -1) {
-        writeln(SS[N/2] + SS[N/2+N%2]);
-        return;
-    }
-
-    auto ts = solve(x, [x]);
-    foreach (t; ts) FX[t] = FX[t] == 1 ? 3 : 2;
-    int d;
-    foreach (f; FX) {
-        if (f == 0) {
-            writeln(-1);
-            return;
-        } else if (f == 3) ++d;
-    }
-
-    auto sc = ss.length;
-    auto tc = ts.length;
-    while (d) {
-        if (sc > tc) {
-            --sc;
-        } else {
-            --tc;
+        if (!put(i, 0)) return writeln(-1);
+        int x, y;
+        foreach (d; cs) {
+            if (d == c) {
+                ++x;
+            } else if (d == c + 1) {
+                ++y;
+            }
         }
-        --d;
+        xs ~= x;
+        ys ~= y;
     }
-    writeln(SS[sc-1] + SS[tc-1]);
+
+    auto ds = new bool[](N + 1);
+    ds[0] = true;
+    foreach (i; 0..xs.length) {
+        auto x = xs[i];
+        auto y = ys[i];
+        auto es = new bool[](N + 1);
+        foreach (j; 0..N) if (ds[j]) {
+            es[j + x] = true;
+            es[j + y] = true;
+        }
+        ds = es;
+    }
+
+    auto r = N * (N - 1);
+    foreach (i; 1..N) if (ds[i]) {
+        auto j = N - i;
+        r = min(r, i * (i - 1) / 2 + j * (j - 1) / 2);
+    }
+    writeln(r);
 }
