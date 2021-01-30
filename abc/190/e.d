@@ -1,4 +1,5 @@
 import std.stdio, std.algorithm, std.conv, std.array, std.string, std.math, std.typecons, std.numeric, std.container, std.range;
+import core.bitop;
 
 void get(Args...)(ref Args args)
 {
@@ -67,42 +68,37 @@ void main()
 
     auto G2 = new long[][](K, K);
     auto DP = new long[](N);
-    alias S = Tuple!(int, "i", long, "l");
     foreach (i; 0..K) {
         auto s = CS[i];
         DP[] = long.max / 3;
         DP[s] = 0;
-        auto ss = [S(s, 0)];
+        auto ss = [s];
+        int l;
         while (!ss.empty) {
-            auto j = ss.front.i;
-            auto l = ss.front.l;
-            ss.popFront();
-            foreach (k; G[j]) if (DP[k] > l + 1) {
-                DP[k] = l + 1;
-                ss ~= S(k, l + 1);
+            ++l;
+            int[] nss;
+            foreach (j; ss) foreach (k; G[j]) if (DP[k] == long.max / 3) {
+                DP[k] = l;
+                nss ~= k;
             }
+            ss = nss;
         }
         foreach (j; 0..K) G2[i][j] = DP[CS[j]];
     }
 
     auto DP2 = new long[][](K, 1<<K);
     foreach (ref dp; DP2) dp[] = long.max / 3;
-    alias S2 = Tuple!(int, "i", int, "c", long, "d");
-    S2[] ss;
     foreach (i; 0..K) {
         DP2[i][1<<i] = 1;
-        ss ~= S2(i, 1<<i, 1);
     }
-    auto Q = heapify!"a.d > b.d"(ss);
-    while (!Q.empty) with (Q.front) {
-        Q.popFront();
-        if (DP2[i][c] < d) continue;
-        foreach (j; 0..K) if (DP2[j][c | (1<<j)] > d + G2[i][j]) {
-            DP2[j][c | (1<<j)] = d + G2[i][j];
-            Q.insert(S2(j, c | (1<<j), d + G2[i][j]));
-        }
+    auto bs = 0.iota(1<<K).array();
+    sort!((a, b) => popcnt(a) < popcnt(b))(bs);
+    foreach (b; bs)
+    foreach (i; 0..K)
+    foreach (j; 0..K)
+    if (DP2[j][b | (1<<j)] > DP2[i][b] + G2[i][j]) {
+        DP2[j][b | (1<<j)] = DP2[i][b] + G2[i][j];
     }
-
     auto res = long.max / 3;
     foreach (i; 0..K) res = min(res, DP2[i][(1<<K) - 1]);
     writeln(res == long.max / 3 ? -1 : res);
