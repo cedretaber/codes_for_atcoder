@@ -52,7 +52,7 @@ void get_lines(Args...)(size_t N, ref Args args)
     }
 }
 
-alias S = Tuple!(long, "i", long, "t", long, "j");
+alias S = Tuple!(long, "i", long, "t", long, "j", long, "n", long, "p");
 
 void main()
 {
@@ -63,42 +63,36 @@ void main()
     S[] ss;
     foreach (_; 0..M) {
         long s; get(s); --s;
-        ss ~= S(s, s * B, 0);
+        ss ~= S(s, s * B, 0, 0, 0);
     }
-    ss ~= S(N, T + 1, 0);
-    foreach (i; 0..M) if (ss[i].t <= T) ss[i].j = min(ss[i].i + (T - ss[i].t) / A + 1, ss[i+1].i);
+    ss ~= S(N, T + 1, 0, 0, 0);
+    foreach (i; 0..M) if (ss[i].t <= T) {
+        auto s = ss[i];
+        s.n = ss[i+1].i;
+        s.j = min(ss[i].i + (T - ss[i].t) / A + 1, s.n);
+        ss[i] = s;
 
-    while (K--) {
-        int idx = -1;
-        long ii, tt, jj, max_p;
-        foreach (i, s; ss) {
-            if (s.t > T || s.j == ss[i+1].i) continue;
-
-            auto t = s.t + (s.j - s.i) * C;
-            if (t > T) continue;
-
-            auto j = min(s.j + (T - t) / A + 1, ss[i+1].i);
-            auto p = j - s.j;
-            if (p > max_p) {
-                max_p = p;
-                idx = i.to!int;
-                ii = s.j;
-                tt = t;
-                jj = j;
-            }
-        }
-        if (idx == -1) break;
-
-        auto s = S(ii, tt, jj);
-        foreach (i; idx+1..ss.length) {
-            auto s2 = ss[i];
-            ss[i] = s;
-            s = s2;
-        }
-        ss ~= s;
+        auto t = s.t + (s.j - s.i) * C;
+        if (t > T) continue;
+        auto k = min(s.j + (T - t) / A + 1, s.n);
+        s.p = k - s.j;
+        ss[i] = s;
     }
 
     long res = -1;
-    foreach (s; ss) if (s.j > s.i) res += s.j - s.i;
+    auto Q = heapify!"a.p < b.p"(ss);
+    while (K--) if (Q.front.p > 0) {
+        auto s = Q.front;
+        Q.popFront();
+        res += s.j - s.i;
+
+        auto i = s.j;
+        auto t = s.t + (i - s.i) * C;
+        if (t > T) continue;
+        auto j = i + s.p;
+        auto k = min(j + (T - (t + (j - i) * C)) / A + 1, s.n);
+        Q.insert(S(i, t, j, s.n, k - j));
+    }
+    foreach (s; Q) if (s.j > s.i) res += s.j - s.i;
     writeln(res);
 }
