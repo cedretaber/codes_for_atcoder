@@ -57,18 +57,18 @@ enum P = 998244353L;
 void main()
 {
     int N, M; get(N, M);
-    auto xs = new long[](M + 1);
-    auto ds = new long[](M + 1);
+    auto ds = new long[](M);
     ds[] = 1;
     auto ps = new long[](N);
     ps[0] = 1;
     foreach (i; 1..N) (ps[i] = ps[i - 1] * M) %= P;
+    auto xs = new long[](M);
     long r = M * ps[N - 1] % P;
     foreach (i; 0..N - 1) {
-        foreach (j; 1..M + 1) {
+        foreach (j; 0..M) {
             (xs[j] *= M) %= P;
-            if (i) (ds[j] *= M - j) %= P;
             (xs[j] += ds[j]) %= P;
+            (ds[j] *= M - j - 1) %= P;
             (r += (ps[i + 1] + P - xs[j]) % P * ps[N - i - 2] % P) %= P;
         }
     }
