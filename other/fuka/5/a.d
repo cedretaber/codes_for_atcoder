@@ -57,7 +57,6 @@ void main()
     for (;;) {
         int N, K; get(N, K);
         if (N == 0) return;
-
         int[] XS; get(XS);
         writeln(XS.sort().take(K).sum());
     }
