@@ -55,10 +55,27 @@ void get_lines(Args...)(size_t N, ref Args args)
 void main()
 {
     for (;;) {
-        int N, K; get(N, K);
-        if (N == 0) return;
+        int W, H, P; get(W, H, P);
+        if (!W && !H && !P) return;
 
-        int[] XS; get(XS);
-        writeln(XS.sort().take(K).sum());
+        int[][] Z; get_lines(H, Z);
+
+        auto memo = new int[][](H, W);
+        void pour(int x, int y) {
+            static foreach (d; [[0,1], [1,0], [0,-1], [-1,0]]) {{
+                auto xx = x + d[0];
+                auto yy = y + d[1];
+                if (0 <= xx && xx < W && 0 <= yy && yy < H && !memo[yy][xx] && Z[yy][xx] < Z[y][x]) {
+                    memo[yy][xx] = 1;
+                    pour(xx, yy);
+                }
+            }}
+        }
+        while (P--) {
+            int x, y; get(x, y);
+            memo[y][x] = 1;
+            pour(x, y);
+        }
+        writeln(memo.joiner().sum());
     }
 }
