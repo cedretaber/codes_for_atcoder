@@ -52,25 +52,22 @@ void get_lines(Args...)(size_t N, ref Args args)
     }
 }
 
+enum P = 10L^^9 + 7;
+
 void main()
 {
-    int N; get(N);
+    long N; get(N);
+    char[] S; get(S);
 
-    auto res = new int[](N - 1);
-    int x = 1;
-    for (;;) {
-        bool r, f = true;
-        foreach (i; 0..res.length) if (res[i] == 0) {
-            r = true;
-            if (f) {
-                res[i] = x;
-                f = false;
-            } else {
-                f = true;
-            }
+    long r = 1, s;
+    foreach (i; 2..N+1) (r *= i) %= P;
+    foreach (c; S) {
+        if ((c == 'B' && s % 2 == 0) || (c == 'W' && s % 2 == 1)) {
+            ++s;
+        } else {
+            (r *= s) %= P;
+            --s;
         }
-        if (!r) break;
-        ++x;
     }
-    foreach (i; 0..N - 1) writefln!"%(%d %)"(res[0..$ - i]);
+    writeln(s == 0 ? r : 0);
 }
