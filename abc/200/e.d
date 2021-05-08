@@ -54,4 +54,36 @@ void get_lines(Args...)(size_t N, ref Args args)
 
 void main()
 {
+    long N, K; get(N, K);
+    auto DP = new long[][](2, N * 3 + 2);
+    foreach (i; 0..N) {
+        DP[0][i + 2] += 1;
+        DP[0][i + 1 + N + 1] -= 1;
+    }
+    foreach (i; 1..N * 2 + 1) {
+        DP[0][i] += DP[0][i - 1];
+        DP[1][i + 1] += DP[0][i];
+        DP[1][i + N + 1] -= DP[0][i];
+    }
+    long k = K, x;
+    foreach (i; 3..N * 3 + 1) {
+        DP[1][i] += DP[1][i - 1];
+        k -= DP[1][i];
+        if (k <= 0) {
+            k += DP[1][i];
+            x = i;
+            break;
+        }
+    }
+
+    foreach (i; 1..x - 1) {
+        auto r = x - i;
+        if (r > N * 2) continue;
+        auto d = r - N > 0 ? N * 2 - r + 1 : r - 1;
+        if (k > d) {
+            k -= d;
+            continue;
+        }
+        return writeln(i, " ", r - N > 0 ? r - N + k - 1 : k, " ", r - N > 0 ? N - k + 1 : r - k);
+    }
 }
