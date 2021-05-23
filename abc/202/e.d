@@ -58,24 +58,50 @@ void main()
     auto T = new int[][N];
     int[] PS; get(PS);
     foreach (i, p; PS) T[p - 1] ~= i.to!int + 1;
-    int q; get(q);
-    alias Q = Tuple!(int, "i", int, "u", int, "d");
-    auto qs = Q[][N];
-    foreach (i; 0..q) {
-        int U, D; get(U, D); --U;
-        qs[U] ~= Q(i, U, D);
-    }
-    auto ps = new Q[][N + 1];
+    auto ss = new int[](N);
+    auto ts = new int[](N);
+    auto ds = new int[][N + 1];
+    int tt;
     void run(int i, int d) {
-        foreach (q; qs[i]) ps[q.d] ~= q;
+        ss[i] = tt++;
+        ds[d] ~= tt++;
         foreach (j; T[i]) run(j, d + 1);
+        ts[i] = tt++;
     }
     run(0, 0);
 
-    auto res = new int[](N + 1);
-    foreach (i; 0..N + 1) res[i].length = ps[i].length;
-    void solve(int i, int d) {
+    int Q; get(Q); while (Q--) {
+        int U, D; get(U, D); --U;
+        auto s = ss[U], t = ts[U], dd = ds[D];
+        if (dd.empty || dd[0] > t || dd[$ - 1] < s) {
+            writeln(0);
+            continue;
+        }
+
+        int l, r = dd.length.to!int;
+        if (dd[0] < s) {
+            int ll = dd.length.to!int;
+            while (l + 1 < ll) {
+                auto m = (l + ll) / 2;
+                if (dd[m] > s) {
+                    ll = m;
+                } else {
+                    l = m;
+                }
+            }
+            l = ll;
+        }
+        if (dd[$ - 1] > t) {
+            int rr;
+            while (rr + 1 < r) {
+                auto m = (rr + r) / 2;
+                if (dd[m] < t) {
+                    rr = m;
+                } else {
+                    r = m;
+                }
+            }
+        }
+        writeln(r - l);
     }
-    solve(0, 0);
-    writefln!"%(%d\n%)"(res);
 }
