@@ -52,45 +52,56 @@ void get_lines(Args...)(size_t N, ref Args args)
     }
 }
 
+int to_hash(string s)
+{
+    int h;
+    foreach (c; s) {
+        h *= 52;
+        if (c >= 'a') {
+            h += c - 'a' + 26;
+        } else {
+            h += c - 'A';
+        }
+    }
+    return h;
+}
+
 void main()
 {
     int N; get(N);
-    int c;
-    int[string] cs;
-    auto to = new int[](N);
-    auto from = new int[][N * 2];
-    foreach (i; 0..N) {
+    int[][52 ^^ 3] G;
+    int[52 ^^ 3] ds;
+    int[] qs;
+    foreach (_; 0..N) {
         string s; get(s);
-        int h, t;
-        if (s[0..3] !in cs) cs[s[0..3]] = c++;
-        h = cs[s[0..3]];
-        if (s[$ - 3..$] !in cs) cs[s[$ - 3..$]] = c++;
-        t = cs[s[$ - 3..$]];
-
-        from[h] ~= i;
-        to[i] = t;
+        auto h = to_hash(s[0..3]);
+        auto t = to_hash(s[$ - 3..$]);
+        qs ~= t;
+        G[t] ~= h;
+        ++ds[h];
     }
 
-    auto res = new int[](N);
-    res[] = -2;
-    foreach (i; 0..N) {
-        int solve(int x) {
-            res[x] = -3;
-            auto r = -2;
-            if (from[to[x]].empty) r = 1;
-            foreach (o; from[to[x]]) {
-                if (res[o] == -2) {
-                    r = max(r, solve(o));
-                } else if (res[o] == -3) {
-                    r = max(r, 0);
-                } else {
-                    r = max(r, -res[o]);
-                }
+    auto DP = new int[](52 ^^ 3);
+    SList!int Q;
+    foreach (i, d; ds) if (d == 0) {
+        DP[i] = 1;
+        Q.insert(i.to!int);
+    }
+
+    while (!Q.empty) {
+        auto v = Q.front;
+        Q.removeFront();
+        foreach (u; G[v]) if (DP[u] == 0) {
+            --ds[u];
+            if (DP[v] == 1) {
+                DP[u] = -1;
+                Q.insert(u);
+            } else if (ds[u] == 0) {
+                DP[u] = 1;
+                Q.insert(u);
             }
-            res[x] = r;
-            return -r;
         }
-        if (res[i] == -2) solve(i);
-        writeln(res[i] == 1 ? "Takahashi" : res[i] == -1 ? "Aoki" : "Draw");
     }
+
+    foreach (q; qs) writeln(DP[q] == 1 ? "Takahashi" : DP[q] == -1 ? "Aoki" : "Draw");
 }
