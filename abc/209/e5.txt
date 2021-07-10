@@ -1,0 +1,6 @@
+5
+aaabbb
+bbbccc
+cccaaa
+bbbddd
+dddeee
