@@ -57,15 +57,14 @@ void main()
     char[] cs; get(cs);
     char[char] to, from;
     foreach (c; 'a' .. 'z' + 1) {
-        auto d = ('a' + i).to!char;
-        to[d] = cs[i];
-        from[cs[i]] = c.to!char;
+        to[c.to!char] = cs[c - 'a'];
+        from[cs[c - 'a']] = c.to!char;
     }
 
     int N; get(N);
     char[][] ss; get_lines(N, ss);
-    foreach (ref s; ss) foreach (ref c; s) c = to[c];
-    sort(ss);
     foreach (ref s; ss) foreach (ref c; s) c = from[c];
+    sort(ss);
+    foreach (ref s; ss) foreach (ref c; s) c = to[c];
     writefln!"%-(%s\n%)"(ss);
 }
