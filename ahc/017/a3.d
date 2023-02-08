@@ -132,12 +132,8 @@ void main()
         if (m1 == m2) continue;
 
         swap(schedules[x], schedules[y]);
-        if (m1 != -1) {
-            days[m1] = d2;
-        }
-        if (m2 != -1) {
-            days[m2] = d1;
-        }
+        if (m1 != -1) days[m1] = d2;
+        if (m2 != -1) days[m2] = d1;
         auto f1 = calc(d1) - f;
         auto f2 = calc(d2) - f;
 
@@ -146,12 +142,8 @@ void main()
             fs[d2] = f2;
         } else {
             swap(schedules[x], schedules[y]);
-            if (m1 != -1) {
-                days[m1] = d1;
-            }
-            if (m2 != -1) {
-                days[m2] = d2;
-            }
+            if (m1 != -1) days[m1] = d1;
+            if (m2 != -1) days[m2] = d2;
         }
     }
 
